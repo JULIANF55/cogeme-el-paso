@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cogeme el paso - Gestión del Tiempo</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="logo.png" type="image/png">
+    <meta name="theme-color" content="#667eea">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#inicio" class="active">🏠 Inicio</a></li>
+                <li><a href="#tareas">📝 Tareas</a></li>
+                <li><a href="#cronometro">⏱️ Cronómetro</a></li>
+                <li><a href="#temporizador">⏰ Temporizador</a></li>
+                <li><a href="#calendario">📅 Calendario</a></li>
+                <li><a href="#recordatorios">🔔 Recordatorios</a></li>
+                <li><a href="#reportes">📊 Reportes</a></li>
+                <li><a href="#metas">🎯 Metas</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="inicio" class="tab-content active">
+            <h1>Bienvenido a Cogeme el paso</h1>
+            <p class="descripcion">Tu asistente personal para la gestión del tiempo y tareas.</p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Tareas Completadas Hoy</h3>
+                    <span class="stat-number" id="tasks-completed-today">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Tiempo Total Trabajado</h3>
+                    <span class="stat-number" id="total-time-today">00:00:00</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Racha Actual</h3>
+                    <span class="stat-number" id="current-streak">0 días</span>
+                </div>
+            </div>
+        </section>
+ 
+        <section id="tareas" class="tab-content">
+            <h2>Lista de Tareas</h2>
+            <div class="task-controls">
+                <input type="text" id="new-task" placeholder="Nueva tarea">
+                <select id="task-category"> 
+                    <option value="personal">Personal</option>
+                    <option value="trabajo">Trabajo</option>
+                    <option value="estudio">Estudio</option>
+                    <option value="salud">Salud</option>
+                </select>
+                <button id="add-task" class="btn-primary">Añadir Tarea</button>
+            </div>
+            <div class="task-filters">
+                <button class="filter-btn active" data-filter="all">Todas</button>
+                <button class="filter-btn" data-filter="pending">Pendientes</button>
+                <button class="filter-btn" data-filter="completed">Completadas</button>
+                <button class="filter-btn" data-filter="personal">Personal</button>
+                <button class="filter-btn" data-filter="trabajo">Trabajo</button>
+                <button class="filter-btn" data-filter="estudio">Estudio</button>
+                <button class="filter-btn" data-filter="salud">Salud</button>
+            </div>
+            <ul id="task-list"></ul>
+        </section>
+
+        <section id="cronometro" class="tab-content">
+            <h2>Cronómetro</h2>
+            <div class="timer-display" id="stopwatch-display">00:00:00</div>
+            <div class="controls">
+                <button id="start-stopwatch" class="btn-primary">Iniciar</button>
+                <button id="pause-stopwatch" class="btn-secondary">Pausar</button>
+                <button id="reset-stopwatch" class="btn-danger">Reiniciar</button>
+            </div>
+            <div class="timer-info">
+                <p id="current-task-info">Sin tarea seleccionada</p>
+            </div>
+        </section>
+
+        <section id="temporizador" class="tab-content">
+            <h2>Temporizador</h2>
+            <div class="timer-display" id="timer-display">25:00</div>
+            <div class="timer-presets">
+                <button class="preset-btn" data-minutes="25">Pomodoro (25min)</button>
+                <button class="preset-btn" data-minutes="5">Descanso Corto (5min)</button>
+                <button class="preset-btn" data-minutes="15">Descanso Largo (15min)</button>
+                <button class="preset-btn" data-minutes="45">Sesión Larga (45min)</button>
+            </div>
+            <div class="controls">
+                <input type="number" id="timer-minutes" value="25" min="1" max="120">
+                <label for="timer-minutes">minutos</label>
+                <button id="start-timer" class="btn-primary">Iniciar</button>
+                <button id="pause-timer" class="btn-secondary">Pausar</button>
+                <button id="reset-timer" class="btn-danger">Reiniciar</button>
+            </div>
+        </section>
+
+        <section id="calendario" class="tab-content">
+            <h2>Calendario</h2>
+            <div class="calendar-controls">
+                <button id="prev-month" class="btn-secondary">‹ Anterior</button>
+                <h3 id="current-month-year"></h3>
+                <button id="next-month" class="btn-secondary">Siguiente ›</button>
+            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <span class="legend-color has-tasks"></span>
+                    <span>Días con tareas</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color completed-tasks"></span>
+                    <span>Días con tareas completadas</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="recordatorios" class="tab-content">
+            <h2>Recordatorios</h2>
+            <div class="reminder-form">
+                <input type="text" id="reminder-text" placeholder="Texto del recordatorio">
+                <input type="datetime-local" id="reminder-datetime">
+                <select id="reminder-type">
+                    <option value="once">Una vez</option>
+                    <option value="daily">Diario</option>
+                    <option value="weekly">Semanal</option>
+                </select>
+                <button id="add-reminder" class="btn-primary">Añadir Recordatorio</button>
+            </div>
+            <div id="reminders-list"></div>
+        </section>
+
+        <section id="reportes" class="tab-content">
+            <h2>Reportes de Productividad</h2>
+            <div class="report-controls">
+                <select id="report-period">
+                    <option value="week">Esta semana</option>
+                    <option value="month">Este mes</option>
+                    <option value="year">Este año</option>
+                </select>
+                <button id="generate-report" class="btn-primary">Generar Reporte</button>
+                <button id="export-data" class="btn-secondary">Exportar Datos</button>
+            </div>
+            <div id="report-content">
+                <div class="report-section">
+                    <h3>Resumen de Actividad</h3>
+                    <div class="report-stats">
+                        <div class="report-stat">
+                            <span class="stat-label">Tareas Completadas:</span>
+                            <span class="stat-value" id="report-tasks-completed">0</span>
+                        </div>
+                        <div class="report-stat">
+                            <span class="stat-label">Tiempo Total:</span>
+                            <span class="stat-value" id="report-total-time">00:00:00</span>
+                        </div>
+                        <div class="report-stat">
+                            <span class="stat-label">Promedio Diario:</span>
+                            <span class="stat-value" id="report-daily-average">00:00:00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="report-section">
+                    <h3>Distribución por Categorías</h3>
+                    <canvas id="category-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="metas" class="tab-content">
+            <h2>Metas y Objetivos</h2>
+            <div class="goal-form">
+                <input type="text" id="goal-title" placeholder="Título de la meta">
+                <textarea id="goal-description" placeholder="Descripción de la meta"></textarea>
+                <input type="date" id="goal-deadline">
+                <select id="goal-category">
+                    <option value="personal">Personal</option>
+                    <option value="trabajo">Trabajo</option>
+                    <option value="estudio">Estudio</option>
+                    <option value="salud">Salud</option>
+                </select>
+                <button id="add-goal" class="btn-primary">Añadir Meta</button>
+            </div>
+            <div id="goals-list"></div>
+        </section>
+    </main>
+
+    <!-- Modal para confirmaciones -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Confirmar</h3>
+            <p id="modal-message">¿Estás seguro?</p>
+            <div class="modal-buttons">
+                <button id="modal-confirm" class="btn-primary">Confirmar</button>
+                <button id="modal-cancel" class="btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificación toast -->
+    <div id="toast" class="toast">
+        <span id="toast-message"></span>
+        <button id="toast-close">×</button>
+    </div>
+
+    <script src="js/utils/storage.js"></script>
+    <script src="js/utils/notifications.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    <script src="js/modules/tasks.js"></script>
+    <script src="js/modules/timer.js"></script>
+    <script src="js/modules/calendar.js"></script>
+    <script src="js/modules/reminders.js"></script>
+    <script src="js/modules/reports.js"></script>
+    <script src="js/modules/goals.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+
