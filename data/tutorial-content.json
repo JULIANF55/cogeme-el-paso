@@ -1,0 +1,51 @@
+[
+    {
+        "title": "Introducción",
+        "content": "Bienvenido a Cógeme el paso, una aplicación web para gestionar tu tiempo, tareas, metas y productividad diaria de forma organizada e intuitiva. Este manual te guiará paso a paso para utilizar cada funcionalidad de la página y optimizar tu organización diaria."
+    },
+    {
+        "title": "Acceso y navegación",
+        "content": "Al abrir la página, verás un menú de navegación con las siguientes secciones: Inicio, Tareas, Cronómetro, Temporizador, Calendario, Recordatorios, Reportes, Metas, Configuración. Puedes cambiar de sección haciendo clic en el menú superior."
+    },
+    {
+        "title": "Gestión de tareas",
+        "content": "Pulsa + Nueva Tarea para crear una tarea ingresando: Título, descripción, categoría, fecha y hora de vencimiento (opcional), prioridad y tiempo estimado. Usa los filtros para visualizar tareas: Todas, Pendientes, Completadas, Vencidas, por categoría. Pulsa el botón Editar (✏️) para modificar una tarea. Pulsa el botón ✓ para marcar una tarea como completada. Pulsa 🗑️ para eliminarla. Puedes exportar o importar tareas en JSON."
+    },
+    {
+        "title": "Cronómetro",
+        "content": "Visualiza el cronómetro en pantalla y usa: Iniciar, Pausar, Reiniciar, Vuelta. Asocia el cronómetro a una tarea para registrar el tiempo trabajado. Consulta las vueltas realizadas en la sección inferior del cronómetro."
+    },
+    {
+        "title": "Temporizador (Pomodoro)",
+        "content": "Configura horas, minutos y segundos según tus necesidades. Pulsa Iniciar para comenzar, puedes pausar o reiniciar. Al finalizar, recibirás una notificación y se registrará como pomodoro completado. Visualiza el total de pomodoros del día y tiempo trabajado en la sección Pomodoro."
+    },
+    {
+        "title": "Calendario",
+        "content": "Navega entre meses con las flechas. Visualiza los días con tareas, tareas completadas y recordatorios. Selecciona un día para ver el detalle de actividades."
+    },
+    {
+        "title": "Recordatorios",
+        "content": "Pulsa + Añadir Recordatorio para crear un recordatorio con descripción, fecha y hora. Filtra entre todos, pendientes y completados. Puedes probar las notificaciones pulsando Probar Notificación."
+    },
+    {
+        "title": "Reportes",
+        "content": "Selecciona el periodo (Hoy, Semana, Mes, Todo el tiempo). Consulta resumen general, productividad por categoría y tendencias de tiempo trabajado. Puedes exportar el reporte en JSON."
+    },
+    {
+        "title": "Metas y objetivos",
+        "content": "Pulsa + Añadir Meta para crear un objetivo con descripción y categoría. Monitorea el progreso según las tareas completadas relacionadas. Filtra por todas, activas, completadas y vencidas."
+    },
+    {
+        "title": "Configuración",
+        "content": "Tema: Predeterminado, Oscuro o Claro. Sonidos: Activa o desactiva sonidos de notificación. Notificaciones: Activa/desactiva notificaciones del navegador. Recordatorio con anticipación: Configura minutos de anticipación. Exportar e importar datos: Gestiona todos los datos de la app. Limpiar todos los datos: Elimina toda la información (con confirmación previa). Consulta los atajos de teclado para agilizar el uso de la app: Ctrl + N: Nueva tarea, Ctrl + Espacio: Iniciar/Pausar cronómetro, Ctrl + R: Reiniciar cronómetro, Ctrl + T: Iniciar/Pausar temporizador."
+    },
+    {
+        "title": "Notificaciones y sonidos",
+        "content": "Recibirás notificaciones al completar temporizadores o tareas. Puedes activar sonidos para recibir alertas mientras trabajas."
+    },
+    {
+        "title": "Soporte",
+        "content": "Si encuentras errores o deseas sugerir mejoras, puedes reportarlas a tu instructor o mantener un registro en tus evidencias de formación. Con esta guía podrás utilizar Cógeme el paso para mejorar tu organización y productividad de manera clara y ordenada durante tu aprendizaje y uso diario."
+    }
+]
+

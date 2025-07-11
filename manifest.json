@@ -1,0 +1,17 @@
+{
+  "name": "Cógeme el paso - Gestión del Tiempo",
+  "short_name": "Cógeme el paso",
+  "description": "Aplicación web para gestionar tu tiempo, tareas, metas y productividad diaria de forma organizada e intuitiva.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#4A90E2",
+  "theme_color": "#4A90E2",
+  "icons": [
+    {
+      "src": "images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+

@@ -1,0 +1,175 @@
+/* ========== TEMAS ========== */
+/* Tema Oscuro */
+[data-theme="dark"] {
+  --primary-color: #4c1d95;
+  --primary-dark: #3c1361;
+  --primary-light: #5b21b6;
+  --secondary-color: #581c87;
+  --accent-color: #c084fc;
+  
+  --text-light: #f8fafc;
+  --text-dark: #0f172a;
+  --text-muted: #94a3b8;
+  
+  --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+  --bg-card: rgba(0, 0, 0, 0.5);
+  --bg-surface: rgba(0, 0, 0, 0.3);
+  --border-color: rgba(255, 255, 255, 0.1);
+  
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Tema Claro */
+[data-theme="light"] {
+  --primary-color: #3b82f6;
+  --primary-dark: #2563eb;
+  --primary-light: #60a5fa;
+  --secondary-color: #1d4ed8;
+  --accent-color: #8b5cf6;
+  
+  --text-light: #1f2937;
+  --text-dark: #030303;
+  --text-muted: #6b7280;
+  
+  --bg-primary: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --bg-overlay: rgba(255, 255, 255, 0.9);
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg-surface: rgba(255, 255, 255, 0.8);
+  --border-color: rgba(0, 0, 0, 0.1);
+  
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .nav-link {
+  color: var(--text-light);
+}
+
+[data-theme="light"] .btn-primary {
+  color: var(--text-dark);
+}
+
+[data-theme="light"] .btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text-light);
+  border-color: var(--border-color);
+}
+
+[data-theme="light"] .form-group input,
+[data-theme="light"] .form-group textarea,
+[data-theme="light"] .form-group select {
+  background: var(--bg-surface);
+  color: var(--text-light);
+  border-color: var(--border-color);
+}
+
+/* Tema Alto Contraste */
+[data-theme="high-contrast"] {
+  --primary-color: #000000;
+  --primary-dark: #000000;
+  --primary-light: #333333;
+  --secondary-color: #000000;
+  --accent-color: #ffff00;
+  
+  --success-color: #00ff00;
+  --warning-color: #ffaa00;
+  --danger-color: #ff0000;
+  --info-color: #0099ff;
+  
+  --text-light: #ffffff;
+  --text-dark: #000000;
+  --text-muted: #cccccc;
+  
+  --bg-primary: #000000;
+  --bg-overlay: #333333;
+  --bg-card: #1a1a1a;
+  --bg-surface: #2a2a2a;
+  --border-color: #ffffff;
+  
+  --shadow: 0 0 0 2px #ffffff;
+  --shadow-lg: 0 0 0 3px #ffffff;
+}
+
+[data-theme="high-contrast"] .nav-link {
+  border: 2px solid transparent;
+}
+
+[data-theme="high-contrast"] .nav-link:hover,
+[data-theme="high-contrast"] .nav-link:focus {
+  border-color: var(--accent-color);
+  background: var(--bg-surface);
+}
+
+[data-theme="high-contrast"] .nav-link.active {
+  border-color: var(--accent-color);
+  background: var(--bg-surface);
+}
+
+[data-theme="high-contrast"] .btn-primary,
+[data-theme="high-contrast"] .btn-secondary,
+[data-theme="high-contrast"] .btn-outline {
+  border: 2px solid var(--text-light);
+  font-weight: bold;
+}
+
+[data-theme="high-contrast"] .btn-primary:hover,
+[data-theme="high-contrast"] .btn-secondary:hover,
+[data-theme="high-contrast"] .btn-outline:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+[data-theme="high-contrast"] .stat-card,
+[data-theme="high-contrast"] .widget,
+[data-theme="high-contrast"] .task-item {
+  border: 2px solid var(--border-color);
+}
+
+[data-theme="high-contrast"] .form-group input,
+[data-theme="high-contrast"] .form-group textarea,
+[data-theme="high-contrast"] .form-group select {
+  border: 2px solid var(--border-color);
+}
+
+[data-theme="high-contrast"] .form-group input:focus,
+[data-theme="high-contrast"] .form-group textarea:focus,
+[data-theme="high-contrast"] .form-group select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+/* Tamaños de fuente */
+[data-font-size="small"] {
+  --font-size-xs: 0.625rem;
+  --font-size-sm: 0.75rem;
+  --font-size-base: 0.875rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.125rem;
+  --font-size-2xl: 1.25rem;
+  --font-size-3xl: 1.5rem;
+  --font-size-4xl: 1.875rem;
+}
+
+[data-font-size="medium"] { /* Default, but explicit for clarity */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+}
+
+[data-font-size="large"] {
+  --font-size-xs: 0.875rem;
+  --font-size-sm: 1rem;
+  --font-size-base: 1.125rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 1.875rem;
+  --font-size-3xl: 2.25rem;
+  --font-size-4xl: 3rem;
+}
