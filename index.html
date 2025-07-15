@@ -48,7 +48,7 @@
     <!-- Contenedor de notificaciones -->
     <div id="notification-container" aria-live="polite"></div>
     
-    <!-- Header mejorado -->
+    <!-- Header -->
     <header role="banner">
         <nav role="navigation" aria-label="Navegación principal">
             <div class="nav-brand">
@@ -126,7 +126,7 @@
     </div>
 
     <main role="main">
-        <!-- Sección de Inicio mejorada -->
+        <!-- Sección de Inicio -->
         <section id="inicio" class="tab-content active" role="tabpanel" aria-labelledby="inicio-tab">
             <div class="welcome-section">
                 <h1>Bienvenido a Cógeme el paso</h1>
@@ -175,9 +175,80 @@
                     <div id="goalsProgress"></div>
                 </div>
             </div>
+
+            <div class="dashboard-widgets">
+                <div class="widget recent-activity">
+                    <h3>Características Principales</h3>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <span class="feature-icon">📋</span>
+                            <div>
+                                <h4>Gestión de Tareas</h4>
+                                <p>Crea, organiza y completa tus tareas de manera eficiente</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">⏲️</span>
+                            <div>
+                                <h4>Cronómetro y Temporizador</h4>
+                                <p>Controla tu tiempo con herramientas precisas</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">📊</span>
+                            <div>
+                                <h4>Reportes de Productividad</h4>
+                                <p>Analiza tu rendimiento y mejora continuamente</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="widget upcoming-tasks">
+                    <h3>Beneficios</h3>
+                    <div class="benefits-list">
+                        <div class="benefit-item">
+                            <span class="benefit-icon">✅</span>
+                            <span>Aumenta tu productividad</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🎯</span>
+                            <span>Alcanza tus metas</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">⚡</span>
+                            <span>Optimiza tu tiempo</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">📈</span>
+                            <span>Mejora tu organización</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="widget goals-progress">
+                    <h3>Tecnologías</h3>
+                    <div class="tech-list">
+                        <div class="tech-item">
+                            <span class="tech-icon">🌐</span>
+                            <span>HTML5 & CSS3</span>
+                        </div>
+                        <div class="tech-item">
+                            <span class="tech-icon">⚡</span>
+                            <span>JavaScript ES6+</span>
+                        </div>
+                        <div class="tech-item">
+                            <span class="tech-icon">📱</span>
+                            <span>Diseño Responsivo</span>
+                        </div>
+                        <div class="tech-item">
+                            <span class="tech-icon">🎨</span>
+                            <span>Interfaz Moderna</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <!-- Sección de Tareas mejorada -->
+        <!-- Sección de Tareas -->
         <section id="tareas" class="tab-content" role="tabpanel" aria-labelledby="tareas-tab">
             <div class="section-header">
                 <h2>Gestión de Tareas</h2>
@@ -185,8 +256,6 @@
             
             <div class="task-controls">
                 <button id="addTaskBtn" class="btn-primary" data-tutorial="new-task">+ Nueva Tarea</button>
-                <button id="importTasksBtn" class="btn-secondary">📥 Importar</button>
-                <button id="exportTasksBtn" class="btn-secondary">📤 Exportar</button>
                 <div class="task-filters">
                     <button class="filter-btn active" data-filter="todas">Todas</button>
                     <button class="filter-btn" data-filter="pendientes">Pendientes</button>
@@ -219,7 +288,7 @@
             </div>
         </section>
 
-        <!-- Resto de secciones con mejoras similares -->
+        <!-- Cronometro -->
         <section id="cronometro" class="tab-content" role="tabpanel" aria-labelledby="cronometro-tab">
             <h2>Cronómetro</h2>
             <div class="timer-container">
@@ -278,7 +347,7 @@
             </div>
         </section>
 
-        <!-- Continúo con las demás secciones... -->
+        <!-- Calendario... -->
         <section id="calendario" class="tab-content" role="tabpanel" aria-labelledby="calendario-tab">
             <div class="container calendar-container">
                 <h2 class="section-title">Calendario</h2>
@@ -456,38 +525,91 @@
         <!-- Nuevas secciones de información -->
         <section id="acerca-de-section" class="tab-content hidden" role="tabpanel" aria-labelledby="acerca-de-tab">
             <h2>Acerca de Cógeme el paso</h2>
-            <div class="card">
-                <p>Cógeme el paso es una aplicación web diseñada para ayudarte a gestionar tu tiempo, tareas y metas de manera eficiente. Nuestro objetivo es proporcionarte una herramienta intuitiva y completa para mejorar tu productividad diaria y alcanzar tus objetivos.</p>
-                <p>Desarrollada con pasión y dedicación, esta aplicación busca ser tu compañero ideal en el camino hacia una mejor organización personal y profesional.</p>
-                <p>Versión: 1.0.0</p>
-                <p>Desarrollado por: Tu Julian Forero - Santiago Cruz - Nicolas Mancilla - Ivan Herrera - Vanessa Misnaza</p>
-                <p>Fecha de lanzamiento: Julio 2025</p>
-            </div>
-            <button class="btn-secondary mt-4" onclick="window.app.showSection('inicio')">Volver al Inicio</button>
+            <div class="about-content">
+                <div class="about-card">
+                    <h3>Nuestra Misión</h3>
+                    <p>Cógeme el paso es una aplicación web diseñada para ayudarte a gestionar tu tiempo, tareas y metas de manera eficiente. Nuestro objetivo es proporcionarte una herramienta intuitiva y completa para mejorar tu productividad diaria y alcanzar tus objetivos.</p>
+                </div>
+                <div class="about-card">
+                    <h3>Desarrollo</h3>
+                    <p>Desarrollada con pasión y dedicación, esta aplicación busca ser tu compañero ideal en el camino hacia una mejor organización personal y profesional.</p>
+                    <div class="version-info">
+                        <p><strong>Versión:</strong> 1.0.0</p>
+                        <p><strong>Fecha de lanzamiento:</strong> Julio 2025</p>
+                    </div>
+                </div>
+                <div class="about-card">
+                    <h3>Equipo de Desarrollo</h3>
+                    <div class="team-list">
+                        <div class="team-member">👨‍💻 Julian Forero</div>
+                        <div class="team-member">👨‍💻 Santiago Cruz</div>
+                        <div class="team-member">👨‍💻 Nicolas Mancilla</div>
+                        <div class="team-member">👨‍💻 Ivan Herrera</div>
+                        <div class="team-member">👩‍💻 Vanessa Misnaza</div>
+                    </div>
+                </div>
         </section>
 
         <section id="ayuda-section" class="tab-content hidden" role="tabpanel" aria-labelledby="ayuda-tab">
             <h2>Ayuda y Soporte</h2>
             <div class="card">
                 <h3>Preguntas Frecuentes (FAQ)</h3>
-                <div class="faq-item">
-                    <h4>¿Cómo añado una nueva tarea?</h4>
-                    <p>Ve a la sección "Tareas" y haz clic en el botón "+ Nueva Tarea". Rellena los detalles y guarda.</p>
+            <div class="help-content">
+                <div class="help-card">
+                    <h3>Preguntas Frecuentes (FAQ)</h3>
+                    <div class="faq-list">
+                        <div class="faq-item">
+                            <h4>¿Cómo añado una nueva tarea?</h4>
+                            <p>Ve a la sección "Tareas" y haz clic en el botón "+ Nueva Tarea". Rellena los detalles y guarda.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>¿Cómo uso el temporizador Pomodoro?</h4>
+                            <p>En la sección "Temporizador", puedes configurar el tiempo deseado o usar los preajustes. Luego, haz clic en "Iniciar" para comenzar tu sesión de trabajo enfocado.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>¿Mis datos están seguros?</h4>
+                            <p>Sí, tus datos se guardan localmente en tu navegador. Si inicias sesión, también se sincronizarán de forma segura en la nube.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>¿Es compatible con dispositivos móviles?</h4>
+                            <p>Sí, la aplicación está diseñada para funcionar perfectamente en computadoras, tablets y teléfonos móviles.</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="faq-item">
-                    <h4>¿Cómo uso el temporizador Pomodoro?</h4>
-                    <p>En la sección "Temporizador", puedes configurar el tiempo deseado o usar los preajustes. Luego, haz clic en "Iniciar" para comenzar tu sesión de trabajo enfocado.</p>
+                <div class="help-card">
+                    <h3>Guía de Uso</h3>
+                    <div class="guide-steps">
+                        <div class="step-item">
+                            <span class="step-number">1</span>
+                            <div>
+                                <h4>Configura tu perfil</h4>
+                                <p>Personaliza la aplicación según tus preferencias</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-number">2</span>
+                            <div>
+                                <h4>Crea tus primeras tareas</h4>
+                                <p>Organiza tu trabajo diario con el gestor de tareas</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-number">3</span>
+                            <div>
+                                <h4>Usa el temporizador</h4>
+                                <p>Aplica la técnica Pomodoro para mayor productividad</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-number">4</span>
+                            <div>
+                                <h4>Revisa tus reportes</h4>
+                                <p>Analiza tu progreso y mejora continuamente</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="faq-item">
-                    <h4>¿Mis datos están seguros?</h4>
-                    <p>Sí, tus datos se guardan localmente en tu navegador. Si inicias sesión, también se sincronizarán de forma segura en la nube (funcionalidad simulada).</p>
-                </div>
-                
-                <h3>Contacto</h3>
-                <p>Si tienes más preguntas o necesitas asistencia, por favor contacta a tu instructor o consulta la documentación completa.</p>
-                <p>Email: julianforero55555@gmail.com</p>
             </div>
-            <button class="btn-secondary mt-4" onclick="window.app.showSection('inicio')">Volver al Inicio</button>
         </section>
 
         <section id="feedback-section" class="tab-content hidden" role="tabpanel" aria-labelledby="feedback-tab">
@@ -533,7 +655,7 @@
         </div>
     </footer>
 
-    <!-- Modals mejorados -->
+    <!-- Modals -->
     <div id="taskModal" class="modal" role="dialog" aria-labelledby="taskModalTitle" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
@@ -644,7 +766,7 @@
         </div>
     </div>
 
-    <!-- Resto de modals similares con mejoras... -->
+    <!-- Resto de modals similares... -->
     <div id="reminderModal" class="modal" role="dialog" aria-labelledby="reminderModalTitle" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
@@ -752,7 +874,6 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="js/utils.js"></script> 
     <script src="js/app.js"></script>
     <script src="js/tasks.js"></script>
     <script src="js/timer.js"></script>
