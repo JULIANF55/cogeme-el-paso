@@ -16,7 +16,7 @@
     <!-- Meta tags para PWA -->
     <meta name="theme-color" content="#4A90E2">
     <!-- Aquí se actualiza la ruta del icono -->
-    <link rel="icon" href="images/image_dc22fc.png"> 
+    <link rel="icon" href="images/icono.png"> 
     
     <!-- Preload de recursos críticos -->
     <link rel="preload" href="js/app.js" as="script">
@@ -53,7 +53,7 @@
         <nav role="navigation" aria-label="Navegación principal">
             <div class="nav-brand">
                 <!-- Aquí se actualiza la ruta de la imagen del logo en el encabezado -->
-                <h1><img src="images/logo.png" alt="logo" style="height: 1em; vertical-align: middle;"> Cógeme el paso</h1>
+                <h1><img src="images/logo.png" alt="logo" style="height: 4em; vertical-align: middle; margin: 0 0 5px 50px;"></h1>
             </div>
             <ul class="nav-menu">
                 <li><a href="#inicio" class="nav-link active" data-section="inicio" aria-current="page">
@@ -181,11 +181,6 @@
         <section id="tareas" class="tab-content" role="tabpanel" aria-labelledby="tareas-tab">
             <div class="section-header">
                 <h2>Gestión de Tareas</h2>
-                <div class="view-toggle">
-                    <button class="view-btn active" data-view="list" aria-label="Vista de lista">📋</button>
-                    <button class="view-btn" data-view="kanban" aria-label="Vista kanban">📊</button>
-                    <button class="view-btn" data-view="calendar" aria-label="Vista calendario">📅</button>
-                </div>
             </div>
             
             <div class="task-controls">
@@ -378,73 +373,65 @@
         </section>
 
         <section id="configuracion" class="tab-content" role="tabpanel" aria-labelledby="configuracion-tab">
-            <h2>Configuración</h2>
+            <h2 class="sr-only">Configuración</h2>
             <div class="config-grid">
+                <!-- Bloque Apariencia -->
                 <div class="config-section">
                     <h3>Apariencia</h3>
-                    <div class="config-item">
+                    <div class="config-row">
                         <label for="themeSelect">Tema:</label>
-                        <select id="themeSelect" aria-label="Seleccionar tema">
+                        <select id="themeSelect">
                             <option value="default">Predeterminado</option>
                             <option value="dark">Oscuro</option>
                             <option value="light">Claro</option>
-                            <option value="high-contrast">Alto Contraste</option>
                         </select>
                     </div>
-                    <div class="config-item">
+                    <div class="config-row">
                         <label for="fontSize">Tamaño de fuente:</label>
-                        <select id="fontSize" aria-label="Seleccionar tamaño de fuente">
+                        <select id="fontSize">
                             <option value="small">Pequeño</option>
-                            <option value="medium">Mediano</option>
+                            <option value="medium" selected>Mediano</option>
                             <option value="large">Grande</option>
                         </select>
                     </div>
-                    <div class="config-item">
-                        <label>
-                            <input type="checkbox" id="soundEnabled"> Sonidos habilitados
-                        </label>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="soundEnabled">
+                        <label for="soundEnabled">Sonidos habilitados</label>
                     </div>
-                    <div class="config-item">
-                        <label>
-                            <input type="checkbox" id="animationsEnabled"> Animaciones habilitadas
-                        </label>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="animationsEnabled" checked>
+                        <label for="animationsEnabled">Animaciones habilitadas</label>
                     </div>
                 </div>
-                
+            
+                <!-- Bloque Notificaciones -->
                 <div class="config-section">
                     <h3>Notificaciones</h3>
-                    <div class="config-item">
-                        <label>
-                            <input type="checkbox" id="notificationsEnabled"> Notificaciones del navegador
-                        </label>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="notificationsEnabled" checked>
+                        <label for="notificationsEnabled">Notificaciones del navegador</label>
                     </div>
-                    <div class="config-item">
-                        <label for="reminderAdvance">Recordar con anticipación (minutos):</label>
-                        <input type="number" id="reminderAdvance" min="0" max="60" value="5" aria-label="Minutos de anticipación para recordatorios">
+                    <div class="notification-row">
+                        <label>Recordar con anticipación (minutos):</label>
+                        <input type="number" id="reminderAdvance" value="6" min="0" max="60">
                     </div>
                 </div>
-                
+            
+                <!-- Bloque Datos -->
                 <div class="config-section">
                     <h3>Datos</h3>
-                    <div class="config-item">
-                        <button id="exportAllData" class="btn-primary">📤 Exportar Todos los Datos</button>
-                    </div>
-                    <div class="config-item">
-                        <button id="importAllData" class="btn-secondary">📥 Importar Datos</button>
-                        <input type="file" id="importFileInput" accept=".json" style="display: none;" aria-label="Seleccionar archivo de datos">
-                    </div>
-                    <div class="config-item">
-                        <button id="clearAllData" class="btn-danger">🗑️ Limpiar Todos los Datos</button>
+                    <div class="data-actions">
+                        <button id="exportAllData" class="btn-secondary">Exportar Todos los Datos</button>
+                        <button id="importAllData" class="btn-secondary">Importar Datos</button>
+                        <button id="clearAllData" class="btn-danger">Limpiar Todos los Datos</button>
+                        <input type="file" id="importFileInput" accept=".json" style="display: none;">
                     </div>
                 </div>
-                
+            
+                <!-- Bloque Atajos -->
                 <div class="config-section">
                     <h3>Atajos de Teclado</h3>
-                    <div class="shortcuts-list">
-                        <div class="shortcut-item">
-                            <span class="shortcut-key">Ctrl + N</span>
-                            <span>Nueva tarea</span>
-                        </div>
+                    <div class="shortcuts-grid">
                         <div class="shortcut-item">
                             <span class="shortcut-key">Ctrl + K</span>
                             <span>Búsqueda global</span>
@@ -456,10 +443,6 @@
                         <div class="shortcut-item">
                             <span class="shortcut-key">Ctrl + R</span>
                             <span>Reiniciar cronómetro</span>
-                        </div>
-                        <div class="shortcut-item">
-                            <span class="shortcut-key">Ctrl + T</span>
-                            <span>Iniciar/Pausar temporizador</span>
                         </div>
                         <div class="shortcut-item">
                             <span class="shortcut-key">F1</span>
