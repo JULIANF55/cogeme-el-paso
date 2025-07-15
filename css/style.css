@@ -162,7 +162,6 @@ nav {
   max-width: 2000px;
   margin: 0 auto;
   flex-wrap: wrap;
-  gap: var(--spacing-md);
 }
 
 .nav-brand h1 {
@@ -553,30 +552,6 @@ main {
 .section-header h2 {
   font-size: var(--font-size-3xl);
   font-weight: 700;
-}
-
-.view-toggle {
-  display: flex;
-  background: var(--bg-surface);
-  border-radius: var(--border-radius-sm);
-  padding: var(--spacing-xs);
-  gap: var(--spacing-xs);
-}
-
-.view-btn {
-  padding: var(--spacing-sm);
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-radius: var(--border-radius-sm);
-  transition: var(--transition);
-}
-
-.view-btn.active,
-.view-btn:hover {
-  background: var(--accent-color);
-  color: var(--text-dark);
 }
 
 .task-controls {
@@ -1271,6 +1246,59 @@ main {
     
     .reporte-card {
         padding: var(--spacing-lg);
+    }
+}
+
+/* ========== CONFIGURACIÓN - DISEÑO 2x2 ========== */
+
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, auto);
+    gap: var(--spacing-lg);
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.config-section {
+    background: #ffffff77;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    height: 100%; /* Asegura que todas las cajas tengan la misma altura */
+}
+
+/* Estilos para el contenido interno (igual que antes) */
+.config-section h3 {
+    color: var(--primary-dark);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.config-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Ajustes para que el contenido quepa bien en las cajas */
+.data-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.shortcuts-grid {
+    grid-template-columns: 1fr; /* Una sola columna para los atajos */
+}
+
+/* Responsive: en móvil se convierte a 1 columna */
+@media (max-width: 768px) {
+    .config-grid {
+        grid-template-columns: 1fr;
     }
 }
 
