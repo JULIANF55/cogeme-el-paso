@@ -281,10 +281,21 @@ class TimerModule {
         
         const pendingTasks = this.app.tasks.filter(t => !t.completed);
         
+        // Guardar la tarea actualmente seleccionada
+        const currentSelection = select.value;
+        
         select.innerHTML = '<option value="">Seleccionar tarea...</option>' +
             pendingTasks.map(task => 
                 `<option value="${task.id}">${Utils.sanitizeHTML(task.title)}</option>`
             ).join('');
+        
+        // Restaurar la selección si la tarea aún existe
+        if (currentSelection && pendingTasks.find(t => t.id === currentSelection)) {
+            select.value = currentSelection;
+            this.currentStopwatchTask = currentSelection;
+        } else if (this.currentStopwatchTask && pendingTasks.find(t => t.id === this.currentStopwatchTask)) {
+            select.value = this.currentStopwatchTask;
+        }
     }
     
     updatePomodoroStats() {
