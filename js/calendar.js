@@ -1,4 +1,5 @@
-// calendar.js
+// calendar.js - Versión corregida para marcar correctamente días con todas las tareas completadas sin mantener el color de pendientes
+
 class CalendarModule {
     constructor(appInstance) {
         this.app = appInstance;
@@ -10,43 +11,21 @@ class CalendarModule {
         const nextBtn = document.getElementById('nextMonth');
         const todayBtn = document.getElementById('todayBtn');
 
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-                this.renderCalendar();
-            });
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-                this.renderCalendar();
-            });
-        }
-
-        if (todayBtn) {
-            todayBtn.addEventListener('click', () => {
-                this.currentDate = new Date();
-                this.renderCalendar();
-            });
-        }
+        if (prevBtn) prevBtn.addEventListener('click', () => { this.currentDate.setMonth(this.currentDate.getMonth() - 1); this.renderCalendar(); });
+        if (nextBtn) nextBtn.addEventListener('click', () => { this.currentDate.setMonth(this.currentDate.getMonth() + 1); this.renderCalendar(); });
+        if (todayBtn) todayBtn.addEventListener('click', () => { this.currentDate = new Date(); this.renderCalendar(); });
     }
 
     renderCalendar() {
         const container = document.getElementById('calendarGrid');
         const monthTitle = document.getElementById('currentMonth');
-
         if (!container || !monthTitle) return;
 
-        // --- MODIFICACIÓN DE LA OPCIÓN 1 ---
-        // Obtén el mes y el año directamente del objeto Date
         const monthName = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(this.currentDate);
         const year = this.currentDate.getFullYear();
         monthTitle.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
-        // -----------------------------------
 
         const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
-        const lastDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
         const startDate = new Date(firstDay);
         startDate.setDate(startDate.getDate() - firstDay.getDay());
 
@@ -59,15 +38,13 @@ class CalendarModule {
 
             const isCurrentMonth = date.getMonth() === this.currentDate.getMonth();
             const isToday = Utils.isSameDay(date, today);
-            const hasTasks = this.app.tasks.some(task =>
-                task.dueDate && Utils.isSameDay(new Date(task.dueDate), date)
-            );
-            const hasCompletedTasks = this.app.tasks.some(task =>
-                task.completed && task.completedAt && Utils.isSameDay(new Date(task.completedAt), date)
-            );
-            const hasReminders = this.app.reminders.some(reminder =>
-                reminder.dateTime && Utils.isSameDay(new Date(reminder.dateTime), date)
-            );
+
+            const tasksForDay = this.app.tasks.filter(task => task.dueDate && Utils.isSameDay(new Date(task.dueDate), date));
+            const hasTasks = tasksForDay.length > 0;
+            const hasCompletedTasks = tasksForDay.some(task => task.completed);
+            const allTasksCompleted = hasTasks && tasksForDay.every(task => task.completed);
+
+            const hasReminders = this.app.reminders.some(reminder => reminder.dateTime && Utils.isSameDay(new Date(reminder.dateTime), date));
 
             days.push({
                 date: date.getDate(),
@@ -75,6 +52,7 @@ class CalendarModule {
                 isToday,
                 hasTasks,
                 hasCompletedTasks,
+                allTasksCompleted,
                 hasReminders,
                 fullDate: new Date(date)
             });
@@ -91,7 +69,12 @@ class CalendarModule {
                 <div class="calendar-day-header">Sáb</div>
             </div>
             ${days.map(day => `
-                <div class="calendar-day ${day.isCurrentMonth ? '' : 'other-month'} ${day.isToday ? 'today' : ''} ${day.hasTasks ? 'has-tasks' : ''} ${day.hasCompletedTasks ? 'has-completed-tasks' : ''} ${day.hasReminders ? 'has-reminders' : ''}"
+                <div class="calendar-day 
+                    ${day.isCurrentMonth ? '' : 'other-month'} 
+                    ${day.isToday ? 'today' : ''} 
+                    ${day.allTasksCompleted ? 'all-tasks-completed' : day.hasTasks ? 'has-tasks' : ''} 
+                    ${day.hasCompletedTasks ? 'has-completed-tasks' : ''} 
+                    ${day.hasReminders ? 'has-reminders' : ''}"
                      onclick="window.calendarModule.showDayDetails('${day.fullDate.toISOString()}')">
                     <div class="calendar-day-content">
                         <span class="day-number">${day.date}</span>
@@ -103,9 +86,7 @@ class CalendarModule {
 
     showDayDetails(dateString) {
         const date = new Date(dateString);
-        const dayTasks = this.app.tasks.filter(task =>
-            task.dueDate && Utils.isSameDay(new Date(task.dueDate), date)
-        );
+        const dayTasks = this.app.tasks.filter(task => task.dueDate && Utils.isSameDay(new Date(task.dueDate), date));
 
         const container = document.getElementById('dayDetails');
         if (!container) return;
@@ -125,8 +106,6 @@ class CalendarModule {
         `;
 
         const modal = document.getElementById('dayDetailsModal');
-        if (modal) {
-            modal.classList.remove('hidden');
-        }
+        if (modal) modal.classList.remove('hidden');
     }
 }
