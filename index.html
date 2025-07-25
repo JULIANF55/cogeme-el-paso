@@ -52,7 +52,6 @@
     <header role="banner">
         <nav role="navigation" aria-label="Navegación principal">
             <div class="nav-brand">
-                <!-- Aquí se actualiza la ruta de la imagen del logo en el encabezado -->
                 <h1><img src="images/logo.png" alt="logo" style="height: 4em; vertical-align: middle; margin: 0 0 5px 50px;"></h1>
             </div>
             <ul class="nav-menu">
@@ -249,7 +248,7 @@
         </section>
 
         <!-- Sección de Tareas -->
-        <section id="tareas" class="tab-content" role="tabpanel" aria-labelledby="tareas-tab">
+        <section id="tareas" class="tab-content centered-section" role="tabpanel" aria-labelledby="tareas-tab">
             <div class="section-header">
                 <h2>Gestión de Tareas</h2>
             </div>
@@ -381,7 +380,7 @@
             </div>
         </section>
 
-        <section id="recordatorios" class="tab-content" role="tabpanel" aria-labelledby="recordatorios-tab">
+        <section id="recordatorios" class="tab-content centered-section" role="tabpanel" aria-labelledby="recordatorios-tab">
             <h2>Recordatorios</h2>
             <div class="reminder-controls">
                 <button id="addReminderBtn" class="btn-primary" data-tutorial="reminders">+ Añadir Recordatorio</button>
@@ -427,7 +426,7 @@
             </div>
         </section>
 
-        <section id="metas" class="tab-content" role="tabpanel" aria-labelledby="metas-tab">
+        <section id="metas" class="tab-content centered-section" role="tabpanel" aria-labelledby="metas-tab">
             <h2>Metas y Objetivos</h2>
             <div class="goal-controls">
                 <button id="addGoalBtn" class="btn-primary" data-tutorial="goals">+ Añadir Meta</button>
@@ -644,6 +643,10 @@
             </div>
             <button class="btn-secondary mt-4" onclick="window.app.showSection('inicio')">Volver al Inicio</button>
         </section>
+
+        <div id="tareasModulo" class="modulo-seccion"></div>
+        <div id="recordatoriosModulo" class="modulo-seccion"></div>
+        <div id="metasModulo" class="modulo-seccion"></div>
     </main>
 
     <footer role="contentinfo">
