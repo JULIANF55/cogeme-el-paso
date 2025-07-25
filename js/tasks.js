@@ -140,7 +140,12 @@ class TasksModule {
         if (this.editingTask) {
             const index = this.app.tasks.findIndex(t => t.id === this.editingTask.id);
             if (index !== -1) {
-                this.app.tasks[index] = { ...this.app.tasks[index], ...taskData, updatedAt: new Date() };
+                this.app.tasks[index] = { 
+                    ...this.app.tasks[index], 
+                    ...taskData, 
+                    updatedAt: new Date(),
+                    editedAt: new Date() // <-- Agrega esta línea
+                };
                 Utils.showToast('Tarea actualizada', 'success');
             }
         } else {
@@ -158,14 +163,33 @@ class TasksModule {
         this.renderTasks();
         this.app.updateDashboardStats();
         this.app.hideModal('taskModal');
+        
+        // Actualizar el desplegable de tareas del cronómetro
+        if (window.timerModule) {
+            window.timerModule.updateStopwatchTasks();
+        }
     }
     
     deleteTask(taskId) {
         if (confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+            const tarea = this.app.tasks.find(t => t.id === taskId);
+            if (tarea) {
+                tarea.deletedAt = new Date();
+                // Guardar en deletedTasks
+                const deletedTasks = this.app.storage.get('deletedTasks') || [];
+                deletedTasks.push(tarea);
+                this.app.storage.set('deletedTasks', deletedTasks);
+            }
             this.app.tasks = this.app.tasks.filter(t => t.id !== taskId);
             this.saveTasks();
             this.renderTasks();
             this.app.updateDashboardStats();
+
+            // Actualizar el desplegable de tareas del cronómetro
+            if (window.timerModule) {
+                window.timerModule.updateStopwatchTasks();
+            }
+
             Utils.showToast('Tarea eliminada', 'info');
         }
     }
@@ -243,34 +267,84 @@ class TasksModule {
             return;
         }
         
-        container.innerHTML = tasks.map(task => `
-            <div class="task-item ${task.completed ? 'completed' : ''} ${task.priority ? 'high-priority' : ''}" 
-                 data-task-id="${task.id}">
-                <div class="task-content">
-                    <div class="task-header">
-                        <h3 class="task-title">${Utils.sanitizeHTML(task.title)}</h3>
-                        <div class="task-actions">
-                            <button class="btn-icon" onclick="window.tasksModule.toggleTaskComplete('${task.id}')" 
-                                    title="${task.completed ? 'Marcar como pendiente' : 'Marcar como completada'}">
-                                ${task.completed ? '↶' : '✓'}
-                            </button>
-                            <button class="btn-icon" onclick="window.tasksModule.editTask('${task.id}')" title="Editar">
-                                ✏️
-                            </button>
-                            <button class="btn-icon" onclick="window.tasksModule.deleteTask('${task.id}')" title="Eliminar">
-                                🗑️
-                            </button>
+        container.innerHTML = tasks.map(task => {
+            // Calcular tiempo total aplicado a esta tarea
+            const timeSpent = this.calculateTaskTimeSpent(task.id);
+            const timeSpentText = timeSpent > 0 ? Utils.formatTime(timeSpent) : 'Sin tiempo registrado';
+            
+            return `
+                <div class="task-item ${task.completed ? 'completed' : ''} ${task.priority ? 'high-priority' : ''}" 
+                     data-task-id="${task.id}">
+                    <div class="task-content">
+                        <div class="task-header">
+                            <h3 class="task-title">${Utils.sanitizeHTML(task.title)}</h3>
+                            <div class="task-actions">
+                                <button class="btn-icon" onclick="window.tasksModule.toggleTaskComplete('${task.id}')" 
+                                        title="${task.completed ? 'Marcar como pendiente' : 'Marcar como completada'}">
+                                    ${task.completed ? '↶' : '✓'}
+                                </button>
+                                <button class="btn-icon" onclick="window.tasksModule.editTask('${task.id}')" title="Editar">
+                                    ✏️
+                                </button>
+                                <button class="btn-icon" onclick="window.tasksModule.deleteTask('${task.id}')" title="Eliminar">
+                                    🗑️
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    ${task.description ? `<p class="task-description">${Utils.sanitizeHTML(task.description)}</p>` : ''}
-                    <div class="task-meta">
-                        <span class="task-category">${task.category}</span>
-                        ${task.estimatedTime ? `<span class="task-time">${task.estimatedTime} min</span>` : ''}
-                        ${task.dueDate ? `<span class="task-due ${this.isTaskOverdue(task) ? 'overdue' : ''}">${Utils.formatDateShort(new Date(task.dueDate))}</span>` : ''}
+                        ${task.description ? `<p class="task-description">${Utils.sanitizeHTML(task.description)}</p>` : ''}
+                        <div class="task-meta">
+                            <span class="task-category">${task.category}</span>
+                            ${task.estimatedTime ? `<span class="task-estimated">⏱️ Est: ${task.estimatedTime} min</span>` : ''}
+                            <span class="task-time-spent" title="Tiempo trabajado en esta tarea">
+                                ⏰ Trabajado: ${timeSpentText}
+                            </span>
+                            ${task.dueDate ? `<span class="task-due ${this.isTaskOverdue(task) ? 'overdue' : ''}">${Utils.formatDateShort(new Date(task.dueDate))}</span>` : ''}
+                        </div>
+                        ${timeSpent > 0 ? this.renderTimeBreakdown(task.id) : ''}
                     </div>
                 </div>
+            `;
+        }).join('');
+    }
+    
+    calculateTaskTimeSpent(taskId) {
+        if (!this.app.timeEntries) return 0;
+        
+        return this.app.timeEntries
+            .filter(entry => entry.taskId === taskId)
+            .reduce((total, entry) => {
+                return total + (entry.seconds || entry.duration || 0);
+            }, 0);
+    }
+    
+    renderTimeBreakdown(taskId) {
+        const entries = this.app.timeEntries.filter(entry => entry.taskId === taskId);
+        if (entries.length === 0) return '';
+        
+        const breakdown = entries.map(entry => {
+            const date = new Date(entry.date);
+            const timeText = Utils.formatTime(entry.seconds || entry.duration || 0);
+            const typeIcon = entry.type === 'stopwatch' ? '⏱️' : '⏰';
+            
+            return `
+                <div class="time-entry">
+                    <span class="time-entry-icon">${typeIcon}</span>
+                    <span class="time-entry-duration">${timeText}</span>
+                    <span class="time-entry-date">${Utils.formatDateShort(date)}</span>
+                </div>
+            `;
+        }).join('');
+        
+        return `
+            <div class="task-time-breakdown">
+                <details>
+                    <summary>Ver desglose de tiempo (${entries.length} sesiones)</summary>
+                    <div class="time-entries">
+                        ${breakdown}
+                    </div>
+                </details>
             </div>
-        `).join('');
+        `;
     }
     
     renderKanbanTasks(tasks) {
