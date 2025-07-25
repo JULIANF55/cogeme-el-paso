@@ -805,6 +805,12 @@ class AuthManager {
         });
         
         window.addEventListener('storageChange', (e) => {
+            if (['tasks', 'goals', 'timeEntries'].includes(e.detail.key)) {
+                window.app.renderGoalsProgress();
+            }
+        });
+        
+        window.addEventListener('storageChange', (e) => {
             if (e.detail.key === 'currentUser') {
                 this.currentUser = e.detail.value;
                 this.isLoggedIn = !!this.currentUser;
@@ -1687,26 +1693,29 @@ class TimeManagementApp {
     
     async init() {
         await this.waitForSystems();
-        
+
         this.setupEventListeners();
         this.setupKeyboardShortcuts();
         this.applySettings();
         this.requestNotificationPermission();
-        
+
         // Initial rendering of sections
         this.renderDashboard();
         this.renderCalendar();
         this.renderReports();
         this.renderGoals();
         this.renderReminders();
-        
+
         this.setupIntervals();
-        
+
         const hash = window.location.hash.substring(1) || 'inicio';
         this.showSection(hash);
-        
+
+        // Bloque redundante eliminado para evitar confusión y posibles errores.
+        // La lógica correcta ahora está centralizada en showSection().
+
         this.storage.createAutoBackup();
-        
+
         console.log('Aplicación inicializada correctamente');
     }
 
@@ -1723,9 +1732,25 @@ class TimeManagementApp {
     }
     
     setupIntervals() {
-        setInterval(() => this.checkReminders(), 60000); // Check reminders every minute
-        setInterval(() => this.updateDashboardStats(), 30000); // Update dashboard every 30 seconds
-        setInterval(() => this.storage.createAutoBackup(), 3600000); // Auto backup every hour
+        // Verificar recordatorios cada 30 segundos para mayor precisión
+        setInterval(() => {
+            if (window.remindersModule) {
+                window.remindersModule.checkReminders();
+            }
+        }, 30000);
+        
+        // Actualizar estadísticas del dashboard cada 30 segundos
+        setInterval(() => this.updateDashboardStats(), 30000);
+        
+        // Auto backup cada hora
+        setInterval(() => this.storage.createAutoBackup(), 3600000);
+        
+        // Verificación inicial de recordatorios
+        setTimeout(() => {
+            if (window.remindersModule) {
+                window.remindersModule.checkReminders();
+            }
+        }, 2000);
     }
     
     async requestNotificationPermission() {
@@ -1735,18 +1760,58 @@ class TimeManagementApp {
     }
     
     showNotification(title, message, type = 'info') {
+        // Mostrar toast siempre
         Utils.showToast(`${title}: ${message}`, type);
         
-        if (this.settings.notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification(title, {
-                body: message,
-                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⏰</text></svg>',
-                tag: 'cogeme-el-paso'
-            });
+        // Notificación del navegador si está habilitada y permitida
+        if (this.settings.notificationsEnabled && 'Notification' in window) {
+            if (Notification.permission === 'granted') {
+                const notification = new Notification(title, {
+                    body: message,
+                    icon: 'images/icono.png',
+                    tag: 'cogeme-el-paso-' + type,
+                    requireInteraction: type === 'warning' || type === 'error', // Requiere interacción para recordatorios importantes
+                    silent: false,
+                    timestamp: Date.now()
+                });
+                
+                // Auto-cerrar notificación después de 5 segundos (excepto las importantes)
+                if (type !== 'warning' && type !== 'error') {
+                    setTimeout(() => {
+                        notification.close();
+                    }, 5000);
+                }
+                
+                // Manejar clic en la notificación
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                    
+                    // Si es un recordatorio, ir a la sección de recordatorios
+                    if (title.includes('Recordatorio')) {
+                        this.showSection('recordatorios');
+                    }
+                };
+                
+            } else if (Notification.permission === 'default') {
+                // Solicitar permiso si no se ha decidido
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        // Volver a intentar mostrar la notificación
+                        this.showNotification(title, message, type);
+                    }
+                });
+            }
         }
         
+        // Sonido si está habilitado
         if (this.settings.soundEnabled) {
             this.playSound(type);
+        }
+        
+        // Vibración para recordatorios importantes (móviles)
+        if ((type === 'warning' || type === 'error') && 'vibrate' in navigator) {
+            navigator.vibrate([200, 100, 200, 100, 200]);
         }
     }
     
@@ -1826,15 +1891,19 @@ class TimeManagementApp {
     }
     
     setupNavigationListeners() {
+        // Configurar listeners para los enlaces de navegación
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const section = link.getAttribute('data-section');
-                this.showSection(section);
-                window.location.hash = section;
+                if (section) {
+                    this.showSection(section);
+                    window.location.hash = section;
+                }
             });
         });
         
+        // Configurar toggle de navegación móvil
         const navToggle = document.querySelector('.nav-toggle');
         const navMenu = document.querySelector('.nav-menu');
         
@@ -1847,9 +1916,26 @@ class TimeManagementApp {
             });
         }
         
+        // Configurar botones de vista
         document.querySelectorAll('.view-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.changeView(btn.dataset.view);
+            });
+        });
+        
+        // Manejar cambios en el hash de la URL
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.substring(1) || 'inicio';
+            this.showSection(hash);
+        });
+        
+        // Configurar enlaces del footer
+        const footerLinks = document.querySelectorAll('footer a[href^="#"]');
+        footerLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('href').substring(1);
+                this.showInfoSection(sectionId);
             });
         });
     }
@@ -1948,51 +2034,65 @@ class TimeManagementApp {
     
     showSection(sectionId) {
         // Ocultar todas las secciones principales de navegación
-        document.querySelectorAll('main > section.tab-content').forEach(section => {
-            section.classList.remove('active');
-            section.classList.add('hidden'); // Asegurarse de que estén ocultas visualmente
+        document.querySelectorAll("main > section.tab-content").forEach(section => {
+            section.classList.remove("active");
+            section.classList.add("hidden");
         });
         
         // Mostrar la sección objetivo
         const targetSection = document.getElementById(sectionId);
         if (targetSection) {
-            targetSection.classList.remove('hidden');
-            targetSection.classList.add('active');
+            targetSection.classList.remove("hidden");
+            targetSection.classList.add("active");
         }
-        
+
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Se obtiene la referencia a los módulos
+        const tareasModulo = document.getElementById('tareasModulo');
+        const recordatoriosModulo = document.getElementById('recordatoriosModulo');
+        const metasModulo = document.getElementById('metasModulo');
+
+        // Lógica simplificada para controlar la visibilidad de los módulos.
+        // Esta única sección de código maneja todos los casos, incluido 'inicio'.
+        // Si sectionId no es 'tareas', 'recordatorios' o 'metas', todos se ocultarán.
+        if (tareasModulo) tareasModulo.style.display = (sectionId === 'tareas') ? 'block' : 'none';
+        if (recordatoriosModulo) recordatoriosModulo.style.display = (sectionId === 'recordatorios') ? 'block' : 'none';
+        if (metasModulo) metasModulo.style.display = (sectionId === 'metas') ? 'block' : 'none';
+        // --- FIN DE LA CORRECCIÓN ---
+
         // Actualizar el estado activo de los enlaces de navegación principales
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('data-section') === sectionId) {
-                link.classList.add('active');
-                link.setAttribute('aria-current', 'page');
+        document.querySelectorAll(".nav-link").forEach(link => {
+            link.classList.remove("active");
+            if (link.getAttribute("data-section") === sectionId) {
+                link.classList.add("active");
+                link.setAttribute("aria-current", "page");
             } else {
-                link.removeAttribute('aria-current');
+                link.removeAttribute("aria-current");
             }
         });
         
         this.onSectionChange(sectionId);
     }
 
-    // Nueva función para mostrar secciones de información (Acerca de, Ayuda, Feedback)
+    // Función para mostrar secciones de información (Acerca de, Ayuda, Feedback)
     showInfoSection(sectionId) {
         // Ocultar todas las secciones principales de navegación
-        document.querySelectorAll('main > section.tab-content').forEach(section => {
-            section.classList.remove('active');
-            section.classList.add('hidden'); // Asegurarse de que estén ocultas visualmente
+        document.querySelectorAll("main > section.tab-content").forEach(section => {
+            section.classList.remove("active");
+            section.classList.add("hidden");
         });
 
-        // Mostrar la sección de informobjetivo
+        // Mostrar la sección de información objetivo
         const targetSection = document.getElementById(sectionId);
         if (targetSection) {
-            targetSection.classList.remove('hidden');
-            targetSection.classList.add('active'); // Usar active para la animación si aplica
+            targetSection.classList.remove("hidden");
+            targetSection.classList.add("active");
         }
 
         // Desactivar cualquier enlace de navegación principal activo
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('active');
-            link.removeAttribute('aria-current');
+        document.querySelectorAll(".nav-link").forEach(link => {
+            link.classList.remove("active");
+            link.removeAttribute("aria-current");
         });
     }
     
@@ -2038,26 +2138,37 @@ class TimeManagementApp {
     
     updateDashboardStats() {
         const today = Utils.getStartOfDay(new Date());
-        
-        const completedToday = this.tasks.filter(task => 
-            task.completed && task.completedAt && 
+
+        // Usar un solo filtro para obtener tareas completadas hoy
+        const completedToday = this.tasks.filter(task =>
+            task.completed && task.completedAt &&
             Utils.isSameDay(new Date(task.completedAt), today)
         ).length;
-        
-        const todayEntries = this.timeEntries.filter(entry => 
-            Utils.isSameDay(new Date(entry.date), today)
-        );
-        const totalSeconds = todayEntries.reduce((sum, entry) => sum + (entry.seconds || entry.duration || 0), 0);
-        
+
+        // Optimizar cálculo de tiempo total del día
+        const totalSeconds = this.timeEntries
+            .filter(entry => Utils.isSameDay(new Date(entry.date), today))
+            .reduce((sum, entry) => sum + (entry.seconds || entry.duration || 0), 0);
+
         const streak = this.calculateStreak();
         const productivity = this.calculateProductivity();
-        
-        this.updateStatElement('completedTasks', completedToday);
-        this.updateStatElement('totalTime', Utils.formatTime(totalSeconds));
-        this.updateStatElement('streak', `${streak} días`);
-        this.updateStatElement('productivity', `${productivity}%`);
-        
-        window.timerModule.updatePomodoroStats();
+
+        // Actualizar elementos de manera más eficiente
+        const updates = [
+            ['completedTasks', completedToday],
+            ['totalTime', Utils.formatTime(totalSeconds)]
+        ];
+        updates.forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element && element.textContent !== value.toString()) {
+                element.textContent = value;
+            }
+        });
+
+        // Actualizar estadísticas de Pomodoro si el módulo existe
+        if (window.timerModule && typeof window.timerModule.updatePomodoroStats === 'function') {
+            window.timerModule.updatePomodoroStats();
+        }
     }
     
     updateStatElement(id, value) {
@@ -2070,15 +2181,19 @@ class TimeManagementApp {
     calculateStreak() {
         let streak = 0;
         let currentDate = new Date();
+        const maxDays = 365; // Límite para evitar bucles infinitos
         
-        while (streak < 365) {
+        // Cache de fechas de tareas completadas para evitar recálculos
+        const completedDates = new Set(
+            this.tasks
+                .filter(task => task.completed && task.completedAt)
+                .map(task => Utils.getStartOfDay(new Date(task.completedAt)).getTime())
+        );
+        
+        while (streak < maxDays) {
             const dayStart = Utils.getStartOfDay(currentDate);
-            const completedThatDay = this.tasks.some(task => 
-                task.completed && task.completedAt && 
-                Utils.isSameDay(new Date(task.completedAt), dayStart)
-            );
             
-            if (completedThatDay) {
+            if (completedDates.has(dayStart.getTime())) {
                 streak++;
                 currentDate.setDate(currentDate.getDate() - 1);
             } else {
@@ -2107,39 +2222,109 @@ class TimeManagementApp {
         if (!container) return;
         
         const recentItems = [];
+        const today = Utils.getStartOfDay(new Date());
         
-        const recentCompletedTasks = this.tasks
-            .filter(task => task.completed && task.completedAt)
-            .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
-            .slice(0, 3);
+        // Contar tareas agregadas hoy
+        const tasksAddedToday = this.tasks.filter(task => 
+            task.createdAt && Utils.isSameDay(new Date(task.createdAt), today)
+        ).length;
         
-        recentCompletedTasks.forEach(task => {
+        if (tasksAddedToday > 0) {
             recentItems.push({
-                type: 'task',
+                type: 'tasks_added',
+                icon: '📝',
+                text: `Se agregaron ${tasksAddedToday} tarea${tasksAddedToday > 1 ? 's' : ''}`,
+                time: new Date()
+            });
+        }
+        
+        // Contar tareas completadas hoy
+        const tasksCompletedToday = this.tasks.filter(task => 
+            task.completed && task.completedAt && Utils.isSameDay(new Date(task.completedAt), today)
+        ).length;
+        
+        if (tasksCompletedToday > 0) {
+            recentItems.push({
+                type: 'tasks_completed',
                 icon: '✅',
-                text: `Completaste "${task.title}"`,
-                time: new Date(task.completedAt)
+                text: `Se completaron ${tasksCompletedToday} tarea${tasksCompletedToday > 1 ? 's' : ''}`,
+                time: new Date()
             });
-        });
+        }
         
-        const recentPomodoros = this.timeEntries
-            .filter(entry => entry.type === 'pomodoro')
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 2);
+        // Contar tareas eliminadas hoy
+        const deletedTasks = this.storage.get('deletedTasks') || [];
+        const tasksDeletedToday = deletedTasks.filter(task => 
+            task.deletedAt && Utils.isSameDay(new Date(task.deletedAt), today)
+        ).length;
         
-        recentPomodoros.forEach(session => {
+        if (tasksDeletedToday > 0) {
             recentItems.push({
-                type: 'pomodoro',
-                icon: '🍅',
-                text: 'Completaste una sesión de Pomodoro',
-                time: new Date(session.date)
+                type: 'tasks_deleted',
+                icon: '🗑️',
+                text: `Se eliminaron ${tasksDeletedToday} tarea${tasksDeletedToday > 1 ? 's' : ''}`,
+                time: new Date()
             });
-        });
+        }
         
-        recentItems.sort((a, b) => b.time - a.time);
+        // Sesiones de Pomodoro completadas hoy
+        const pomodorosToday = this.timeEntries.filter(entry => 
+            entry.type === 'pomodoro' && Utils.isSameDay(new Date(entry.date), today)
+        ).length;
+        
+        if (pomodorosToday > 0) {
+            recentItems.push({
+                type: 'pomodoros_completed',
+                icon: '🍅',
+                text: `Se completaron ${pomodorosToday} sesión${pomodorosToday > 1 ? 'es' : ''} de Pomodoro`,
+                time: new Date()
+            });
+        }
+        
+        // Recordatorios agregados hoy
+        const remindersAddedToday = this.reminders.filter(reminder => 
+            reminder.createdAt && Utils.isSameDay(new Date(reminder.createdAt), today)
+        ).length;
+        
+        if (remindersAddedToday > 0) {
+            recentItems.push({
+                type: 'reminders_added',
+                icon: '🔔',
+                text: `Se agregaron ${remindersAddedToday} recordatorio${remindersAddedToday > 1 ? 's' : ''}`,
+                time: new Date()
+            });
+        }
+        
+        // Metas creadas hoy
+        const goalsAddedToday = this.goals.filter(goal => 
+            goal.createdAt && Utils.isSameDay(new Date(goal.createdAt), today)
+        ).length;
+        
+        if (goalsAddedToday > 0) {
+            recentItems.push({
+                type: 'goals_added',
+                icon: '🎯',
+                text: `Se agregaron ${goalsAddedToday} meta${goalsAddedToday > 1 ? 's' : ''}`,
+                time: new Date()
+            });
+        }
+        
+        // Contar tareas editadas hoy
+        const tasksEditedToday = this.tasks.filter(task =>
+            task.editedAt && Utils.isSameDay(new Date(task.editedAt), today)
+        ).length;
+
+        if (tasksEditedToday > 0) {
+            recentItems.push({
+                type: 'tasks_edited',
+                icon: '✏️',
+                text: `Se editaron ${tasksEditedToday} tarea${tasksEditedToday > 1 ? 's' : ''}`,
+                time: new Date()
+            });
+        }
         
         if (recentItems.length === 0) {
-            container.innerHTML = '<p class="empty-state">No hay actividad reciente</p>';
+            container.innerHTML = '<p class="empty-state">No hay actividad reciente hoy</p>';
             return;
         }
         
@@ -2148,7 +2333,7 @@ class TimeManagementApp {
                 <span class="activity-icon">${item.icon}</span>
                 <div class="activity-content">
                     <p>${item.text}</p>
-                    <small>${this.getRelativeTime(item.time)}</small>
+                    <small>Hoy</small>
                 </div>
             </div>
         `).join('');
@@ -2158,47 +2343,210 @@ class TimeManagementApp {
         const container = document.getElementById('upcomingTasks');
         if (!container) return;
         
-        const upcoming = this.tasks
-            .filter(task => !task.completed && task.dueDate)
-            .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
-            .slice(0, 5);
+        const today = Utils.getStartOfDay(new Date());
+        const endOfToday = Utils.getEndOfDay(new Date());
         
-        if (upcoming.length === 0) {
-            container.innerHTML = '<p class="empty-state">No hay tareas próximas</p>';
+        // Filtrar tareas del día actual que no estén completadas
+        const todayTasks = this.tasks
+            .filter(task => {
+                if (task.completed) return false;
+                
+                // Tareas con fecha de vencimiento hoy
+                if (task.dueDate) {
+                    const dueDate = new Date(task.dueDate);
+                    return dueDate >= today && dueDate <= endOfToday;
+                }
+                
+                // Tareas creadas hoy sin fecha de vencimiento
+                if (task.createdAt) {
+                    const createdDate = new Date(task.createdAt);
+                    return Utils.isSameDay(createdDate, today);
+                }
+                
+                return false;
+            })
+            .sort((a, b) => {
+                // Priorizar por fecha de vencimiento, luego por prioridad
+                if (a.dueDate && b.dueDate) {
+                    return new Date(a.dueDate) - new Date(b.dueDate);
+                }
+                if (a.priority && !b.priority) return -1;
+                if (!a.priority && b.priority) return 1;
+                return 0;
+            })
+            .slice(0,  5);
+        
+        if (todayTasks.length === 0) {
+            container.innerHTML = '<p class="empty-state">No hay tareas programadas para hoy</p>';
             return;
         }
         
-        container.innerHTML = upcoming.map(task => `
-            <div class="upcoming-task ${window.tasksModule.isTaskOverdue(task) ? 'overdue' : ''}">
-                <h4>${Utils.sanitizeHTML(task.title)}</h4>
-                <p class="task-due">${Utils.formatDateShort(new Date(task.dueDate))}</p>
-            </div>
-        `).join('');
-    }
-    
-    renderGoalsProgress() {
-        const container = document.getElementById('goalsProgress');
-        if (!container) return;
-        
-        const activeGoals = this.goals.filter(goal => !goal.completed).slice(0, 3);
-        
-        if (activeGoals.length === 0) {
-            container.innerHTML = '<p class="empty-state">No hay metas activas</p>';
-            return;
-        }
-        
-        container.innerHTML = activeGoals.map(goal => {
-            const progress = window.goalsModule.calculateGoalProgress(goal);
+        container.innerHTML = todayTasks.map(task => {
+            const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+            const timeText = task.dueDate ? 
+                new Date(task.dueDate).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 
+                'Sin hora específica';
+            
             return `
-                <div class="goal-progress">
-                    <h4>${Utils.sanitizeHTML(goal.title)}</h4>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${progress}%"></div>
+                <div class="upcoming-task ${isOverdue ? 'overdue' : ''} ${task.priority ? 'priority' : ''}">
+                    <div class="task-header">
+                        <h4>${Utils.sanitizeHTML(task.title)}</h4>
+                        ${task.priority ? '<span class="priority-badge">Alta prioridad</span>' : ''}
                     </div>
-                    <p>${progress}% completado</p>
+                    <p class="task-time">${timeText}</p>
+                    <p class="task-category">${task.category || 'Sin categoría'}</p>
                 </div>
             `;
         }).join('');
+    }
+    
+    renderGoalsProgress() {
+        // Actualizar metas desde storage antes de renderizar
+        this.goals = this.storage.get('goals') || [];
+
+        const container = document.getElementById('goalsProgress');
+        if (!container) return;
+
+        // Filtrar metas activas (no completadas y no vencidas)
+        const activeGoals = this.goals.filter(goal =>
+            !goal.completed && new Date(goal.deadline) >= new Date()
+        );
+
+        if (activeGoals.length === 0) {
+            container.innerHTML = '<p class="empty-state">No tienes metas activas</p>';
+            return;
+        }
+
+        container.innerHTML = activeGoals.map(goal => {
+            // Usar progreso manual si existe, si no calcular automáticamente
+            const currentValue = (typeof goal.progress === 'number' && goal.progress >= 0)
+                ? goal.progress
+                : this.calculateGoalCurrentValue(goal);
+            const targetValue = goal.target || 1;
+            const progress = Math.min((currentValue / targetValue) * 100, 100);
+
+            // Determinar el texto de progreso según el tipo de meta
+            let progressText = '';
+            switch (goal.type) {
+                case 'time':
+                    progressText = `${currentValue} de ${targetValue} horas`;
+                    break;
+                case 'tasks':
+                    progressText = `${currentValue} de ${targetValue} tareas`;
+                    break;
+                case 'streak':
+                    progressText = `${currentValue} de ${targetValue} días`;
+                    break;
+                default:
+                    progressText = `${currentValue} de ${targetValue}`;
+            }
+
+            // Calcular días restantes
+            const endDate = new Date(goal.deadline);
+            const currentDate = new Date();
+            const remainingDays = Math.max(0, Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24)));
+
+            // Barra de progreso y porcentaje
+            return `
+                <div class="goal-progress">
+                    <div class="goal-header">
+                        <h4>${Utils.sanitizeHTML(goal.title)}</h4>
+                        <span class="goal-category">${goal.category || 'General'}</span>
+                    </div>
+                    <div class="progress-bar" style="background:#eee; border-radius:8px; height:18px; margin:8px 0; position:relative;">
+                        <div class="progress-fill" style="
+                            width: ${progress}%;
+                            background: linear-gradient(90deg,#4ade80,#3b82f6);
+                            height: 100%;
+                            border-radius:8px;
+                            transition: width 0.4s;
+                            position:absolute;
+                            left:0; top:0;
+                        "></div>
+                        <span style="
+                            position:absolute;
+                            right:8px; top:0;
+                            height:100%;
+                            display:flex; align-items:center;
+                            font-weight:bold; color:#222;
+                            z-index:2;
+                        ">${Math.round(progress)}%</span>
+                    </div>
+                    <div class="goal-stats">
+                        <p class="progress-text">${progressText}</p>
+                        <p class="remaining-time">${remainingDays} días restantes</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    calculateGoalCurrentValue(goal) {
+        if (!goal) return 0;
+        
+        const startDate = new Date(goal.createdAt || goal.startDate || Date.now());
+        const currentDate = new Date();
+        
+        switch (goal.type) {
+            case 'time':
+                // Calcular horas trabajadas desde el inicio de la meta
+                const timeEntries = this.timeEntries.filter(entry => 
+                    new Date(entry.date) >= startDate && new Date(entry.date) <= currentDate
+                );
+                const totalSeconds = timeEntries.reduce((sum, entry) => sum + (entry.seconds || entry.duration || 0), 0);
+                return Math.floor(totalSeconds / 3600); // Convertir a horas
+                
+            case 'tasks':
+                // Contar tareas completadas desde el inicio de la meta
+                return this.tasks.filter(task => 
+                    task.completed && 
+                    task.completedAt && 
+                    new Date(task.completedAt) >= startDate &&
+                    new Date(task.completedAt) <= currentDate &&
+                    (!goal.category || task.category === goal.category)
+                ).length;
+                
+            case 'streak':
+                // Calcular racha actual
+                return this.calculateStreakForGoal(goal);
+                
+            default:
+                return 0;
+        }
+    }
+    
+    calculateStreakForGoal(goal) {
+        let streak = 0;
+        let currentDate = new Date();
+        const startDate = new Date(goal.createdAt || goal.startDate || Date.now());
+        
+        while (currentDate >= startDate && streak < 365) {
+            const dayStart = Utils.getStartOfDay(currentDate);
+            const hasActivityThatDay = this.tasks.some(task => 
+                task.completed && 
+                task.completedAt && 
+                Utils.isSameDay(new Date(task.completedAt), dayStart) &&
+                (!goal.category || task.category === goal.category)
+            );
+            
+            if (hasActivityThatDay) {
+                streak++;
+                currentDate.setDate(currentDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        
+        return streak;
+    }
+    
+    getGoalUnit(type) {
+        switch (type) {
+            case 'time': return 'horas';
+            case 'tasks': return 'tareas';
+            case 'streak': return 'días';
+            default: return 'unidades';
+        }
     }
     
     getRelativeTime(date) {
@@ -2437,38 +2785,53 @@ class TimeManagementApp {
         const messageElement = document.getElementById('confirmMessage');
         const yesBtn = document.getElementById('confirmYes');
         const noBtn = document.getElementById('confirmNo');
-        
-        if (modal && messageElement) {
-            messageElement.textContent = message;
-            modal.style.display = 'flex';
-            modal.setAttribute('aria-hidden', 'false');
-            
-            const handleYes = () => {
+
+        if (!modal || !messageElement || !yesBtn || !noBtn) {
+            Utils.showToast('No se pudo mostrar el diálogo de confirmación.', 'error');
+            return;
+        }
+
+        messageElement.textContent = message;
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+
+        // Funciones nombradas para poder remover los listeners correctamente
+        function handleYes() {
+            yesBtn.disabled = true;
+            noBtn.disabled = true;
+            try {
                 if (callback) {
                     callback();
                 } else {
                     this.storage.clearAllData();
                 }
-                modal.style.display = 'none';
-                modal.setAttribute('aria-hidden', 'true');
-                yesBtn.removeEventListener('click', handleYes);
-                noBtn.removeEventListener('click', handleNo);
-            };
-            
-            const handleNo = () => {
-                modal.style.display = 'none';
-                modal.setAttribute('aria-hidden', 'true');
-                yesBtn.removeEventListener('click', handleYes);
-                noBtn.removeEventListener('click', handleNo);
-            };
-            
-            // Limpiar listeners anteriores para evitar duplicados
+            } catch (err) {
+                Utils.showToast('Error al eliminar datos.', 'error');
+                console.error(err);
+            }
+            closeModal();
+        }
+
+        function handleNo() {
+            closeModal();
+        }
+
+        const closeModal = () => {
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+            yesBtn.disabled = false;
+            noBtn.disabled = false;
             yesBtn.removeEventListener('click', handleYes);
             noBtn.removeEventListener('click', handleNo);
+        };
 
-            yesBtn.addEventListener('click', handleYes);
-            noBtn.addEventListener('click', handleNo);
-        }
+        // Limpiar listeners previos
+        yesBtn.removeEventListener('click', handleYes);
+        noBtn.removeEventListener('click', handleNo);
+
+        // Usar bind para que this apunte correctamente
+        yesBtn.addEventListener('click', handleYes.bind(this));
+        noBtn.addEventListener('click', handleNo);
     }
 
     submitFeedback(form) {
@@ -2508,6 +2871,7 @@ window.auth = auth;
 // Inicializar aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new TimeManagementApp();
+    window.app.showSection('inicio'); // <-- Solución: fuerza la lógica de visibilidad al cargar
 });
 // Inicializar módulos después de que la aplicación principal y todos los scripts estén disponibles
 // Este bloque se ejecuta después de que todos los archivos JS anteriores se hayan cargado.
