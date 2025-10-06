@@ -3398,3 +3398,45 @@ footer {
   border-radius: 8px;
 }
 
+/* Próximas Tareas: máximo 2 tareas visibles, scroll si hay más */
+#upcomingTasks {
+  max-height: 220px; /* Ajusta según el alto de 2 tareas, puedes modificar este valor */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px; /* Espacio para el scroll */
+  scroll-behavior: smooth;
+}
+
+/* Apariencia del scroll para Próximas Tareas */
+#upcomingTasks::-webkit-scrollbar {
+  width: 8px;
+  background: var(--bg-overlay);
+}
+#upcomingTasks::-webkit-scrollbar-thumb {
+  background: var(--primary-light);
+  border-radius: 8px;
+}
+
+/* Actividad Reciente: máximo 2 actividades visibles, scroll si hay más */
+#recentActivities {
+  max-height: 220px; /* Ajusta según el alto de 2 actividades, puedes modificar este valor */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px; /* Espacio para el scroll */
+  scroll-behavior: smooth;
+}
+
+/* Apariencia del scroll para Actividad Reciente */
+#recentActivities::-webkit-scrollbar {
+  width: 8px;
+  background: var(--bg-overlay);
+}
+#recentActivities::-webkit-scrollbar-thumb {
+  background: var(--primary-light);
+  border-radius: 8px;
+}
+
