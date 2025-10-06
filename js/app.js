@@ -888,24 +888,50 @@ class AuthManager {
         const form = this.authForms.login;
         const email = form.querySelector('#loginEmail').value;
         const password = form.querySelector('#loginPassword').value;
-        
+
+        // Limpiar mensaje anterior
+        const mensajeDiv = document.getElementById('mensaje');
+        if (mensajeDiv) mensajeDiv.textContent = '';
+
         if (!this.validateLoginForm(email, password)) {
+            if (mensajeDiv) mensajeDiv.textContent = 'Por favor completa todos los campos correctamente.';
             return;
         }
-        
+
         this.setFormLoading(form, true);
-        
+
         try {
-            const user = await this.authenticateUser(email, password);
+            // Usar FormData para enviar como formulario tradicional
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('password', password);
+
+            const response = await fetch('login.php', {
+                method: 'POST',
+                body: formData
+            });
             
-            if (user) {
+            const result = await response.json();
+
+            if (result.success) {
+                const user = {
+                    id: result.user.id,
+                    name: result.user.name,
+                    email: result.user.email,
+                    avatar: result.user.avatar || this.generateAvatar(result.user.name),
+                    sessionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                    loginTime: new Date()
+                };
                 this.loginSuccess(user);
+                if (mensajeDiv) mensajeDiv.textContent = '¡Inicio de sesión exitoso!';
             } else {
-                this.showAuthMessage('Email o contraseña incorrectos', 'error');
+                if (mensajeDiv) mensajeDiv.textContent = result.message || 'Email o contraseña incorrectos';
+                this.showAuthMessage(result.message || 'Email o contraseña incorrectos', 'error');
             }
         } catch (error) {
             console.error('Error en login:', error);
-            this.showAuthMessage('Error de conexión. Inténtalo de nuevo.', 'error');
+            if (mensajeDiv) mensajeDiv.textContent = 'Error de conexión con el servidor';
+            this.showAuthMessage('Error de conexión con el servidor', 'error');
         } finally {
             this.setFormLoading(form, false);
         }
@@ -917,21 +943,37 @@ class AuthManager {
         const email = form.querySelector('#registerEmail').value;
         const password = form.querySelector('#registerPassword').value;
         const confirmPassword = form.querySelector('#registerPasswordConfirm').value;
-        
+    
         if (!this.validateRegisterForm(name, email, password, confirmPassword)) {
             return;
         }
-        
+
         this.setFormLoading(form, true);
-        
+
         try {
-            const user = await this.registerUser(name, email, password);
-            
-            if (user) {
+            const formData = new FormData();
+            formData.append('username', name);
+            formData.append('email', email);
+            formData.append('password', password);
+
+           const response = await fetch('register.php', {
+               method: 'POST',
+               body: formData
+           });
+
+            const result = await response.json();
+
+            if (result.success) {
+                const user = {
+                    id: result.user.id,
+                    name: result.user.name,
+                    email: result.user.email,
+                    avatar: result.user.avatar || null
+                };
                 this.loginSuccess(user);
                 this.showAuthMessage('Cuenta creada exitosamente', 'success');
             } else {
-                this.showAuthMessage('Error al crear la cuenta', 'error');
+                this.showAuthMessage(result.message || 'Error al crear la cuenta', 'error');
             }
         } catch (error) {
             console.error('Error en registro:', error);
@@ -2342,51 +2384,42 @@ class TimeManagementApp {
     renderUpcomingTasks() {
         const container = document.getElementById('upcomingTasks');
         if (!container) return;
-        
+
         const today = Utils.getStartOfDay(new Date());
-        const endOfToday = Utils.getEndOfDay(new Date());
-        
-        // Filtrar tareas del día actual que no estén completadas
-        const todayTasks = this.tasks
+
+        // Mostrar tareas no completadas con dueDate hoy o en el futuro, ordenadas por fecha
+        const upcomingTasks = this.tasks
             .filter(task => {
                 if (task.completed) return false;
-                
-                // Tareas con fecha de vencimiento hoy
                 if (task.dueDate) {
-                    const dueDate = new Date(task.dueDate);
-                    return dueDate >= today && dueDate <= endOfToday;
+                    const dueDate = Utils.getStartOfDay(new Date(task.dueDate));
+                    return dueDate >= today;
                 }
-                
-                // Tareas creadas hoy sin fecha de vencimiento
-                if (task.createdAt) {
-                    const createdDate = new Date(task.createdAt);
-                    return Utils.isSameDay(createdDate, today);
-                }
-                
                 return false;
             })
             .sort((a, b) => {
-                // Priorizar por fecha de vencimiento, luego por prioridad
-                if (a.dueDate && b.dueDate) {
-                    return new Date(a.dueDate) - new Date(b.dueDate);
+                // Ordenar por dueDate más próxima, luego por prioridad
+                const aDue = new Date(a.dueDate);
+                const bDue = new Date(b.dueDate);
+                if (aDue.getTime() !== bDue.getTime()) {
+                    return aDue - bDue;
                 }
                 if (a.priority && !b.priority) return -1;
                 if (!a.priority && b.priority) return 1;
                 return 0;
             })
-            .slice(0,  5);
-        
-        if (todayTasks.length === 0) {
-            container.innerHTML = '<p class="empty-state">No hay tareas programadas para hoy</p>';
+            .slice(0, 5);
+
+        if (upcomingTasks.length === 0) {
+            container.innerHTML = '<p class="empty-state">No hay tareas programadas próximas</p>';
             return;
         }
-        
-        container.innerHTML = todayTasks.map(task => {
+
+        container.innerHTML = upcomingTasks.map(task => {
             const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
-            const timeText = task.dueDate ? 
-                new Date(task.dueDate).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 
-                'Sin hora específica';
-            
+            const timeText = task.dueDate && task.dueTime
+                ? `${task.dueTime} hs`
+                : (task.dueDate ? 'Sin hora específica' : 'Sin fecha');
             return `
                 <div class="upcoming-task ${isOverdue ? 'overdue' : ''} ${task.priority ? 'priority' : ''}">
                     <div class="task-header">
